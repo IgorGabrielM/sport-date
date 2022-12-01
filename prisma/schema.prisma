@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid()) @map("id_user")
+  email    String @unique
+  password String
+  cep      String
+  name     String
+  username String @unique
+  road     String
+  district String
+
+  Events EventsOnUser[]
+
+  @@map("users")
+}
+
+model Owner {
+  id    String @id @default(uuid()) @map("id_owner")
+  name  String
+  phone String
+  cnpj  String
+
+  places Place[]
+
+  @@map("owner")
+}
+
+model EventsOnUser {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  @@id([userId, eventId])
+}
+
+model Event {
+  id   String @id @default(uuid()) @map("id_event")
+  name String
+
+  dateEnd   DateTime @map("date_end")
+  dateStart DateTime @map("date_start")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  Place   Place?  @relation(fields: [placeId], references: [id])
+  placeId String?
+
+  Users EventsOnUser[]
+
+  @@map("events")
+}
+
+model Place {
+  id          String @id @default(uuid()) @map("id_place")
+  name        String
+  description String
+  cep         String
+  road        String
+  district    String
+  number      String
+
+  events  Event[]
+  Owner   Owner?  @relation(fields: [ownerId], references: [id])
+  ownerId String?
+}
